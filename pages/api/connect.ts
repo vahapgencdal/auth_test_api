@@ -6,6 +6,9 @@ export default function handler(
   req: NextApiRequest,
   res: NextApiResponse,
 ) {
+  res.setHeader('Access-Control-Allow-Origin', '*');  // Adjust '*' for security reasons
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST');
+  res.setHeader('Access-Control-Allow-Headers', 'Authorization, Content-Type');
   try {
     // Get the authorization header
     const authHeader = req.headers.authorization;
