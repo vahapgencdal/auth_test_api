@@ -25,12 +25,22 @@ export function validateToken(token: any) {
 
     // Check if the token issuer matches the expected issuer
     if (decodedPayload.iss !== issuer) {
-      throw new Error('Invalid issuer:'+issuer);
+      return {
+        error: "issuer not same",
+        payload :decodedPayload,
+        issuer: issuer,
+        scope: requiredScope
+      }
     }
 
     // Check if the token contains the required scope
     if (!decodedPayload.scope || !decodedPayload.scope.includes(requiredScope)) {
-      throw new Error('Insufficient scope:'+decodedPayload.toString());
+      return {
+        error: "payload not found",
+        payload :decodedPayload,
+        issuer: issuer,
+        scope: requiredScope
+      }
     }
 
     // Return the decoded payload if everything is valid
