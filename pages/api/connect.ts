@@ -18,7 +18,7 @@ export default function handler(
     const token = authHeader.split(' ')[1];
 
     // Validate the token
-    const { verifiedToken, decodedPayload } = validateToken(token);
+    const { decodedPayload } = validateToken(token);
 
     console.log('Token payload:', decodedPayload);
 

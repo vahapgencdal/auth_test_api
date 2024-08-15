@@ -1,37 +1,40 @@
 // utils/auth.js
-import jwt from 'jsonwebtoken';
+
+// Helper function to decode Base64-URL
+function base64UrlDecode(base64Url: string) {
+  const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+  const decodedData = Buffer.from(base64, 'base64').toString('utf-8');
+  return decodedData;
+}
 
 export function validateToken(token: any) {
   try {
-    // Decode the token without verification to check the payload
-    const decodedToken = jwt.decode(token, { complete: true });
+    // Split the token into its parts (header, payload, signature)
+    const [header, payload, signature] = token.split('.');
 
-    if (!decodedToken) {
-      throw new Error('Invalid token');
+    if (!payload) {
+      throw new Error('Invalid token format');
     }
+
+    // Decode the payload
+    const decodedPayload = JSON.parse(base64UrlDecode(payload));
 
     // Get environment variables
     const requiredScope = process.env.SCOPE;
     const issuer = process.env.ISSUER;
 
     // Check if the token issuer matches the expected issuer
-    if (decodedToken.payload.iss !== issuer) {
-      throw new Error('Invalid issuer; '+ decodedToken.payload.iss);
+    if (decodedPayload.iss !== issuer) {
+      throw new Error('Invalid issuer:'+issuer);
     }
 
     // Check if the token contains the required scope
-    if (!decodedToken.payload.scope || !decodedToken.payload.scope.includes(requiredScope)) {
-      throw new Error('Insufficient scope '+ decodedToken.payload.scope);
+    if (!decodedPayload.scope || !decodedPayload.scope.includes(requiredScope)) {
+      throw new Error('Insufficient scope:'+decodedPayload.toString());
     }
 
-    // Verify the token (signature and expiration)
-    const verifiedToken = jwt.verify(token, process.env.JWT_SECRET); // Replace with your secret or public key
-
-    // Return both the decoded payload and the verified token
-    return {
-      verifiedToken,
-      decodedPayload: decodedToken.payload,
-    };
+    // Return the decoded payload if everything is valid
+    return decodedPayload;
   } catch (error: any) {
     throw new Error(error.message);
   }
